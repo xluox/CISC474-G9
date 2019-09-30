@@ -1,4 +1,6 @@
 var myGamePiece;
+var obstacles = [];
+var buildings = [];
 var myObstacle;
 var myObstacle2;
 var myScore;
@@ -12,10 +14,10 @@ var onBlock = false;
 function startGame() {
     myGameArea.start();
     myObstacle =  new component(30, 30, "green", 300, 510); 
-    myObstacle2 = new component(60, 30, "green", 450, 450);
+    // myObstacle2 = new component(60, 30, "green", 450, 450);
+    obstacles = getObstacles();
     myGamePiece = new component(30, 30, "red", 10, 120);
     myGamePiece.gravity = 0.8;
-    // myObstacle.gravity = 0;
     myScore = new component("30px", "Consolas", "black", 800, 40, "text");
 }
 
@@ -72,7 +74,8 @@ function component(width, height, color, x, y, type) {
     this.gravity = 0.05;
     this.gravitySpeed = 0; 
     this.x = x;
-    this.y = y;    
+    this.y = y;
+    this.direction = 0;
     this.update = function() {
         ctx = myGameArea.context;
         if (type == "image") {
@@ -95,8 +98,9 @@ function component(width, height, color, x, y, type) {
         this.x += this.speedX;
         this.y += this.speedY + this.gravitySpeed;  
         this.hitBottom();  
-        this.standOnBlocks(myObstacle2);  
+        // this.standOnBlocks(myObstacle2);  
     }
+
     this.standOnBlocks = function(object){
         var blockBottom = object.y - this.height;
 
@@ -154,11 +158,16 @@ function updateGameArea() {
     if (myGamePiece.crashWith(myObstacle)) {
     myGameArea.stop();
     } else {
-
         myGameArea.clear();
+        for (i of obstacles){
+            i.trapMove();
+            i.update();
+        }
 
         myObstacle.update();
-        myObstacle2.update();
+        // myObstacle2.update();
+        // myObstacle3.trapMove();
+        // myObstacle3.update();
         myGamePiece.speedX = 0;
         myGamePiece.speedY = 0;    
         if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece.speedX = -4; }
