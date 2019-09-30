@@ -32,11 +32,15 @@ function building(width, height, color, x, y, type) {
         }
     }
 
+
 }
 
 function getBuildings(){
     list = [];
-    list.push(new building(30, 30, "green", 300, 510));
+    list.push(new building(30, 540, "black", 0, 0));
+    list.push(new building(990, 30, "black", 30, 510));
+    list.push(new building(30, 470, "black", 930, 0));
+
 
     return list;
 }

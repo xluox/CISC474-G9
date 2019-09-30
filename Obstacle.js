@@ -1,3 +1,5 @@
+var consSpeed = 1;
+
 function obstacle(width, height, color, x, y, direction, type) {
     this.type = type;
     if (type == "image") {
@@ -30,16 +32,16 @@ function obstacle(width, height, color, x, y, direction, type) {
     this.trapMove = function(){
         switch(this.direction){
             case 1:
-                this.y += -5;
+                this.y += -consSpeed;
                 break;
             case 2:
-                this.y += 5;
+                this.y += consSpeed;
                 break;
             case 3:
-                this.x += -5;
+                this.x += -consSpeed;
                 break;
             case 4:
-                this.x += 5;
+                this.x += consSpeed;
 
         }
     }

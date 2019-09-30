@@ -13,12 +13,14 @@ var onBlock = false;
 
 function startGame() {
     myGameArea.start();
-    myObstacle =  new component(30, 30, "green", 300, 510); 
+    // myObstacle =  new component(30, 30, "green", 300, 510); 
     // myObstacle2 = new component(60, 30, "green", 450, 450);
     obstacles = getObstacles();
-    myGamePiece = new component(30, 30, "red", 10, 120);
+    buildings = getBuildings();
+    myGamePiece = new component(15, 15, "red", 40, 400);
     myGamePiece.gravity = 0.8;
-    myScore = new component("30px", "Consolas", "black", 800, 40, "text");
+    myScore = new component("30px", "Consolas", "black", 780, 40, "text");
+
 }
 
 var myGameArea = {
@@ -32,7 +34,7 @@ var myGameArea = {
         this.interval = setInterval(updateGameArea, 20);
         window.addEventListener('keydown', function (e) {
             // console.log(e.key);
-            if(e.key == "ArrowUp" && keyTime > 0){ jump(); console.log(keyTime);}
+            if(e.key == "ArrowUp" && keyTime > 0){ jump();}
             myGameArea.keys = (myGameArea.keys || []);
             myGameArea.keys[e.keyCode] = (e.type == "keydown");
         })
@@ -48,9 +50,10 @@ var myGameArea = {
         this.restart();
     },
     restart : function(){
+        obstacles = getObstacles();
         myGamePiece.gravitySpeed = 0;
-        myGamePiece.x = 10;
-        myGamePiece.y = 120;
+        myGamePiece.x = 40;
+        myGamePiece.y = 400;
         lifeUsed++;
     }
 }
@@ -98,9 +101,54 @@ function component(width, height, color, x, y, type) {
         this.x += this.speedX;
         this.y += this.speedY + this.gravitySpeed;  
         this.hitBottom();  
-        // this.standOnBlocks(myObstacle2);  
+        for (i of buildings){
+            this.hitBuilding(i);
+        }
+        // this.hitBuilding(myObstacle2);
+         
     }
+    this.hitBuilding = function(object){
+        // stand on top
+        if ((this.y >= (object.y - this.height)) && 
+        (this.y < (object.y - this.height)+10) &&
+        (this.x < (object.x + object.width)) &&
+        (this.x > (object.x - this.width))) {
+            this.gravitySpeed = 0;
+            this.y = object.y - this.height ;
+            onGround = true;
+            keyTime = 2;
+        }
 
+        // hit from bottom
+        if ((this.y <= (object.y + object.height)) && 
+        (this.y > (object.y + object.height) - 10) &&
+        (this.x < (object.x + object.width)) &&
+        (this.x > (object.x - this.width))) {
+            this.gravitySpeed = 0;
+            this.y = object.y + object.height;
+            this.speedY = 0;
+        }
+
+        // hit from left
+        if ((this.y <= (object.y + object.height)) && 
+        (this.y > (object.y - this.height)) &&
+        (this.x < (object.x - this.width)+5 ) &&
+        (this.x >= (object.x - this.width))) {
+            this.x = object.x - this.width;
+            this.speedX = 0;
+        }
+
+        // hit from right
+        if ((this.y <= (object.y + object.height)) && 
+        (this.y > (object.y - this.height)) &&
+        (this.x <= (object.x + object.width) ) &&
+        (this.x > (object.x + object.width)-5 )) {
+            this.x = object.x + object.width;
+            this.speedX = 0;
+        }
+
+        
+    }
     this.standOnBlocks = function(object){
         var blockBottom = object.y - this.height;
 
@@ -155,37 +203,35 @@ function component(width, height, color, x, y, type) {
 }
 
 function updateGameArea() {
-    if (myGamePiece.crashWith(myObstacle)) {
-    myGameArea.stop();
-    } else {
-        myGameArea.clear();
-        for (i of obstacles){
-            i.trapMove();
-            i.update();
+
+    myGameArea.clear();
+    for (i of obstacles){
+        i.trapMove();
+        i.update();
+        if(myGamePiece.crashWith(i) ){
+            myGameArea.stop();
         }
-
-        myObstacle.update();
-        // myObstacle2.update();
-        // myObstacle3.trapMove();
-        // myObstacle3.update();
-        myGamePiece.speedX = 0;
-        myGamePiece.speedY = 0;    
-        if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece.speedX = -4; }
-        if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = 4; }
-        // if (myGameArea.keys && myGameArea.keys[38] && keyTime > 0) {  jump(); console.log("Jump left: " + keyTime);}
-        // if (myGameArea.keys && myGameArea.keys[40]) {myGamePiece.speedY = 2; }
-        myScore.text = "Life used: " + lifeUsed;
-        myScore.update();
-        myGamePiece.newPos();
-        myGamePiece.update();
-
     }
+    for (i of buildings){
+        i.update();
+    }
+
+    // myObstacle2.update();
+
+    myGamePiece.speedX = 0;
+    myGamePiece.speedY = 0;    
+    if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece.speedX = -4; }
+    if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = 4; }
+    myScore.text = "Life used: " + lifeUsed;
+    myScore.update();
+    myGamePiece.newPos();
+    myGamePiece.update();
+
 }
 function jump(){
-    console.log("Jump!!!");
+    // console.log("Jump!!!");
     accelerate(-10); 
     keyTime -= 1;
-    // onGround = false;
 }
 function accelerate(n) {
   myGamePiece.gravitySpeed = n;
