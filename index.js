@@ -17,10 +17,14 @@ function startGame() {
     // myObstacle2 = new component(60, 30, "green", 450, 450);
     obstacles = getObstacles();
     buildings = getBuildings();
-    myGamePiece = new component(15, 15, "red", 40, 400);
-    myGamePiece.gravity = 0.8;
+    myGamePiece = getPlayer();
     myScore = new component("30px", "Consolas", "black", 780, 40, "text");
 
+}
+function getPlayer(){
+    player =  new component(15, 15, "red", 40, 330);
+    player.gravity = 0.8;
+    return player;
 }
 
 var myGameArea = {
@@ -51,9 +55,7 @@ var myGameArea = {
     },
     restart : function(){
         obstacles = getObstacles();
-        myGamePiece.gravitySpeed = 0;
-        myGamePiece.x = 40;
-        myGamePiece.y = 400;
+        myGamePiece = getPlayer();
         lifeUsed++;
     }
 }
@@ -100,7 +102,7 @@ function component(width, height, color, x, y, type) {
         this.gravitySpeed += this.gravity;
         this.x += this.speedX;
         this.y += this.speedY + this.gravitySpeed;  
-        this.hitBottom();  
+        // this.hitBottom();  
         for (i of buildings){
             this.hitBuilding(i);
         }
@@ -149,39 +151,8 @@ function component(width, height, color, x, y, type) {
 
         
     }
-    this.standOnBlocks = function(object){
-        var blockBottom = object.y - this.height;
 
-        if(this.y >= blockBottom && (this.x+this.width) > object.x && this.x < (object.x+object.width)){
-            // console.log("Y: "+ this.y + "BB:" + blockBottom);
-            onBlock = true;
-        }
-        else{
-            onBlock = false;
-        }
-        // console.log(onBlock);
-        if(onBlock){
-            this.gravitySpeed = 0;
-            this.y = blockBottom;
-            keyTime = jumpConst;
-        }
-    }
-    this.hitBottom = function() {
-    var rockbottom = myGameArea.canvas.height - this.height;
-    // console.log("Y : " + this.y);
-    if (this.y >= rockbottom) {
 
-        this.gravitySpeed = 0;
-        this.y = rockbottom;
-        onGround = true;
-        keyTime = jumpConst;
-    }
-    else{
-        // console.log("On Sky");
-        // onGround = false;
-        // keyTime = 0;
-    }
-    }   
     this.crashWith = function(otherobj) {
         var myleft = this.x;
         var myright = this.x + (this.width);
