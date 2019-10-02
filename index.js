@@ -9,6 +9,17 @@ var jumpConst = 2;
 var keyTime = jumpConst;
 var onGround = false;
 var onBlock = false;
+var top = 0;
+var bottom = 510;
+var leftEdge = 30;
+var rightEdge = 930;
+var Ctop = 0;
+var Cbottom = 510;
+var CleftEdge = 30;
+var CrightEdge = 930;
+var Hspeed = 0;
+var moveSpeed = 2;
+var jumpSpeed = 5;
 
 
 function startGame() {
@@ -23,7 +34,7 @@ function startGame() {
 }
 function getPlayer(){
     player =  new component(15, 15, "red", 40, 330);
-    player.gravity = 0.8;
+    player.gravity = 0.3;
     return player;
 }
 
@@ -35,7 +46,7 @@ var myGameArea = {
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;        
-        this.interval = setInterval(updateGameArea, 20);
+        this.interval = setInterval(updateGameArea, 10);
         window.addEventListener('keydown', function (e) {
             // console.log(e.key);
             if(e.key == "ArrowUp" && keyTime > 0){ jump();}
@@ -54,6 +65,7 @@ var myGameArea = {
         this.restart();
     },
     restart : function(){
+        // console.log("Hspeed: " + Hspeed);
         obstacles = getObstacles();
         myGamePiece = getPlayer();
         lifeUsed++;
@@ -78,6 +90,7 @@ function component(width, height, color, x, y, type) {
     this.speedY = 0;   
     this.gravity = 0.05;
     this.gravitySpeed = 0; 
+    this.speedLimit = 10;
     this.x = x;
     this.y = y;
     this.direction = 0;
@@ -100,57 +113,98 @@ function component(width, height, color, x, y, type) {
     }
     this.newPos = function() {
         this.gravitySpeed += this.gravity;
+        if(this.gravitySpeed > this.speedLimit){
+            this.gravitySpeed = this.speedLimit;
+        }
         this.x += this.speedX;
-        this.y += this.speedY + this.gravitySpeed;  
-        // this.hitBottom();  
+        this.y += this.gravitySpeed;  
+
         for (i of buildings){
             this.hitBuilding(i);
+            // i.collide(this);
         }
         // this.hitBuilding(myObstacle2);
          
     }
     this.hitBuilding = function(object){
+
         // stand on top
-        if ((this.y >= (object.y - this.height)) && 
-        (this.y < (object.y - this.height)+10) &&
+        if (this.y >= (object.y - this.height -4) && 
+        this.y + this.height <= (object.y  +5) &&
         (this.x < (object.x + object.width)) &&
-        (this.x > (object.x - this.width))) {
+        (this.x > (object.x - this.width))      ) {
             this.gravitySpeed = 0;
             this.y = object.y - this.height ;
-            onGround = true;
-            keyTime = 2;
+            keyTime = jumpConst;
         }
-
         // hit from bottom
-        if ((this.y <= (object.y + object.height)) && 
-        (this.y > (object.y + object.height) - 10) &&
+        else if ((this.y <= (object.y + object.height)) && 
+        (this.y > (object.y + object.height) - 5) &&
         (this.x < (object.x + object.width)) &&
         (this.x > (object.x - this.width))) {
             this.gravitySpeed = 0;
             this.y = object.y + object.height;
-            this.speedY = 0;
         }
 
         // hit from left
-        if ((this.y <= (object.y + object.height)) && 
+        else if ((this.y <= (object.y + object.height)) && 
         (this.y > (object.y - this.height)) &&
-        (this.x < (object.x - this.width)+5 ) &&
-        (this.x >= (object.x - this.width))) {
+        (this.x < (object.x - this.width)+3 ) &&
+        (this.x > (object.x - this.width))) {
             this.x = object.x - this.width;
-            this.speedX = 0;
         }
 
         // hit from right
-        if ((this.y <= (object.y + object.height)) && 
+        else if ((this.y <= (object.y + object.height)) && 
         (this.y > (object.y - this.height)) &&
-        (this.x <= (object.x + object.width) ) &&
-        (this.x > (object.x + object.width)-5 )) {
+        (this.x < (object.x + object.width) ) &&
+        (this.x > (object.x + object.width)-3 )) {
             this.x = object.x + object.width;
-            this.speedX = 0;
         }
+        
 
         
     }
+
+    // this.onTop = function(object){
+    //     if(this.y + this.height < object.y && this.x < object.x + object.width && this.x + this.width > object.x){
+    //         return true;
+    //     }
+    //     return false;
+    // }
+
+    // this.characterCollision = function(object){
+        
+    //     if(this.x < leftEdge){
+    //         this.x = leftEdge;
+    //     }
+    //     else if(this.y < top){
+    //         this.y = top;
+    //         this.gravitySpeed = 0;
+    //     }
+    //     else if( (this.x+this.width) > rightEdge ){
+    //         this.x = rightEdge-this.width;
+    //     }
+    //     else if( this.y > (bottom - this.height)){
+    //         this.y = bottom - this.height;
+    //         keyTime = jumpConst;
+    //         this.gravitySpeed = 0;
+    //     }
+
+    //     if(this.onTop(object)){
+    //         if(object.y <= bottom){
+    //             console.log("bottom change: " + bottom + "object y: "+ object.y);
+    //             bottom = object.y;
+    //         }
+    //     }
+    //     else{
+    //         if(object.y != bottom){
+    //         bottom = Cbottom;
+    //         }
+    //     }
+
+
+    // }
 
 
     this.crashWith = function(otherobj) {
@@ -170,6 +224,10 @@ function component(width, height, color, x, y, type) {
             crash = false;
         }
         return crash;
+    }
+
+    this.crashWithTriangle = function(object){
+
     }
 }
 
@@ -191,8 +249,8 @@ function updateGameArea() {
 
     myGamePiece.speedX = 0;
     myGamePiece.speedY = 0;    
-    if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece.speedX = -4; }
-    if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = 4; }
+    if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece.speedX = -moveSpeed; }
+    if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = moveSpeed; }
     myScore.text = "Life used: " + lifeUsed;
     myScore.update();
     myGamePiece.newPos();
@@ -201,7 +259,7 @@ function updateGameArea() {
 }
 function jump(){
     // console.log("Jump!!!");
-    accelerate(-10); 
+    accelerate(-jumpSpeed); 
     keyTime -= 1;
 }
 function accelerate(n) {
