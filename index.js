@@ -9,10 +9,10 @@ var jumpConst = 2;
 var keyTime = jumpConst;
 var onGround = false;
 var onBlock = false;
-var top = 0;
-var bottom = 510;
-var leftEdge = 30;
-var rightEdge = 930;
+// var top = 0;
+// var bottom = 510;
+// var leftEdge = 30;
+// var rightEdge = 930;
 var Ctop = 0;
 var Cbottom = 510;
 var CleftEdge = 30;
@@ -20,20 +20,31 @@ var CrightEdge = 930;
 var Hspeed = 0;
 var moveSpeed = 2;
 var jumpSpeed = 5;
+var intervalRate = 10;
+var baseLevel = 0;
+var level = 0;
 
 
 function startGame() {
     myGameArea.start();
-    // myObstacle =  new component(30, 30, "green", 300, 510); 
-    // myObstacle2 = new component(60, 30, "green", 450, 450);
-    obstacles = getObstacles();
-    buildings = getBuildings();
+    obstacles = getObstacles(baseLevel);
+    buildings = getBuildings(baseLevel);
     myGamePiece = getPlayer();
     myScore = new component("30px", "Consolas", "black", 780, 40, "text");
 
 }
 function getPlayer(){
     player =  new component(15, 15, "red", 40, 330);
+    player.gravity = 0.3;
+    return player;
+}
+function getPlayerFromLeft(){
+    player =  new component(15, 15, "red", CleftEdge-20, Cbottom-11);
+    player.gravity = 0.3;
+    return player;
+}
+function getPlayerFromRight(){
+    player =  new component(15, 15, "red", CrightEdge+20, Cbottom-11);
     player.gravity = 0.3;
     return player;
 }
@@ -46,7 +57,7 @@ var myGameArea = {
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;        
-        this.interval = setInterval(updateGameArea, 10);
+        this.interval = setInterval(updateGameArea, intervalRate);
         window.addEventListener('keydown', function (e) {
             // console.log(e.key);
             if(e.key == "ArrowUp" && keyTime > 0){ jump();}
@@ -64,22 +75,18 @@ var myGameArea = {
     },
     stop : function() {
         clearInterval(this.interval);
-        
+
     },
     restart : function(){
         // console.log("Hspeed: " + Hspeed);
         clearInterval(this.interval);
-        this.interval = setInterval(updateGameArea, 10);
-        obstacles = getObstacles();
+        this.interval = setInterval(updateGameArea, intervalRate);
+        obstacles = getObstacles(level);
         myGamePiece = getPlayer();
         lifeUsed++;
     }
 }
 
-function everyinterval(n) {
-  if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
-  return false;
-}
 
 function component(width, height, color, x, y, type) {
     this.type = type;
@@ -125,9 +132,8 @@ function component(width, height, color, x, y, type) {
 
         for (i of buildings){
             this.hitBuilding(i);
-            // i.collide(this);
         }
-        // this.hitBuilding(myObstacle2);
+        this.reachLevelPoint();
          
     }
     this.hitBuilding = function(object){
@@ -170,46 +176,6 @@ function component(width, height, color, x, y, type) {
         
     }
 
-    // this.onTop = function(object){
-    //     if(this.y + this.height < object.y && this.x < object.x + object.width && this.x + this.width > object.x){
-    //         return true;
-    //     }
-    //     return false;
-    // }
-
-    // this.characterCollision = function(object){
-        
-    //     if(this.x < leftEdge){
-    //         this.x = leftEdge;
-    //     }
-    //     else if(this.y < top){
-    //         this.y = top;
-    //         this.gravitySpeed = 0;
-    //     }
-    //     else if( (this.x+this.width) > rightEdge ){
-    //         this.x = rightEdge-this.width;
-    //     }
-    //     else if( this.y > (bottom - this.height)){
-    //         this.y = bottom - this.height;
-    //         keyTime = jumpConst;
-    //         this.gravitySpeed = 0;
-    //     }
-
-    //     if(this.onTop(object)){
-    //         if(object.y <= bottom){
-    //             console.log("bottom change: " + bottom + "object y: "+ object.y);
-    //             bottom = object.y;
-    //         }
-    //     }
-    //     else{
-    //         if(object.y != bottom){
-    //         bottom = Cbottom;
-    //         }
-    //     }
-
-
-    // }
-
 
     this.crashWith = function(otherobj) {
         var myleft = this.x;
@@ -228,6 +194,27 @@ function component(width, height, color, x, y, type) {
             crash = false;
         }
         return crash;
+    }
+
+    this.reachLevelPoint = function(){
+        if(this.x > CrightEdge + 30){
+            level++;
+            console.log("level changed: " + level);
+            obstacles = getObstacles(level);
+            buildings = getBuildings(level);
+            myGamePiece = getPlayerFromLeft();
+
+        }
+        else if(this.x+this.width < CleftEdge-30){
+            level--;
+            console.log("level changed: " + level);
+            obstacles = getObstacles(level);
+            buildings = getBuildings(level);
+            myGamePiece = getPlayerFromRight();
+
+        }
+
+
     }
 
     this.crashWithTriangle = function(object){
@@ -249,7 +236,6 @@ function updateGameArea() {
         i.update();
     }
 
-    // myObstacle2.update();
 
     myGamePiece.speedX = 0;
     myGamePiece.speedY = 0;    
