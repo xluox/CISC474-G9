@@ -137,14 +137,6 @@ function component(width, height, color, x, y, type) {
             this.y = object.y - this.height ;
             keyTime = jumpConst;
         }
-        // hit from bottom
-        else if ((this.y <= (object.y + object.height)) && 
-        (this.y > (object.y + object.height) - 5) &&
-        (this.x < (object.x + object.width)) &&
-        (this.x > (object.x - this.width))) {
-            this.gravitySpeed = 0;
-            this.y = object.y + object.height;
-        }
 
         // hit from left
         else if ((this.y <= (object.y + object.height)) && 
@@ -160,6 +152,14 @@ function component(width, height, color, x, y, type) {
         (this.x < (object.x + object.width) ) &&
         (this.x > (object.x + object.width)-3 )) {
             this.x = object.x + object.width;
+        }
+        // hit from bottom
+        else if ((this.y <= (object.y + object.height)) && 
+        (this.y > (object.y + object.height) - 5) &&
+        (this.x < (object.x + object.width)) &&
+        (this.x > (object.x - this.width))) {
+            this.gravitySpeed = 0;
+            this.y = object.y + object.height;
         }
         
 
