@@ -158,7 +158,7 @@ function component(width, height, color, x, y, type) {
         }
 
         // hit from left
-        else if ((this.y <= (object.y + object.height)) && 
+        else if ((this.y < (object.y + object.height)) && 
         (this.y > (object.y - this.height)) &&
         (this.x < (object.x - this.width)+3 ) &&
         (this.x > (object.x - this.width))) {
@@ -166,7 +166,7 @@ function component(width, height, color, x, y, type) {
         }
 
         // hit from right
-        else if ((this.y <= (object.y + object.height)) && 
+        else if ((this.y < (object.y + object.height)) && 
         (this.y > (object.y - this.height)) &&
         (this.x < (object.x + object.width) ) &&
         (this.x > (object.x + object.width)-3 )) {
@@ -242,9 +242,9 @@ function component(width, height, color, x, y, type) {
         var distance2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
         var distance3 = Math.sqrt(dx3 * dx3 + dy3 * dy3);
 
-        console.log("distance1: "+ distance1 + "radius: " + circleHero.radius + circle1.radius );
-        console.log("distance2: "+ distance2 + "radius: " + circleHero.radius + circle2.radius );
-        console.log("distance3: "+ distance3 + "radius: " + circleHero.radius + circle3.radius );
+        // console.log("distance1: "+ distance1 + "radius: " + circleHero.radius + circle1.radius );
+        // console.log("distance2: "+ distance2 + "radius: " + circleHero.radius + circle2.radius );
+        // console.log("distance3: "+ distance3 + "radius: " + circleHero.radius + circle3.radius );
 
         if (distance1 < circleHero.radius + circle1.radius) {
             // collision detected!
@@ -267,7 +267,7 @@ function updateGameArea() {
 
     myGameArea.clear();
     for (i of obstacles){
-        i.trapMove();
+        i.trapMove(myGamePiece);
         i.update();
         // if(myGamePiece.crashWithTriangle(i) ){
         //     myGameArea.stop();
@@ -290,9 +290,11 @@ function updateGameArea() {
 
 }
 function jump(){
-    // console.log("Jump!!!");
+    console.log("Jump!!!");
+
     accelerate(-jumpSpeed); 
     keyTime -= 1;
+    console.log("Jump left: " + keyTime);
 }
 function accelerate(n) {
   myGamePiece.gravitySpeed = n;

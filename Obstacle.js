@@ -29,6 +29,8 @@ function obstacle(width, height, color, x, y, direction, type) {
         }
     }
 
+    
+
     this.trapMove = function(){
         switch(this.direction){
             case 1:
@@ -66,6 +68,7 @@ function triangle(width, height, color, x, y, direction, type) {
     this.center1 = [this.x + 15, this.y];
     this.center2 = [this.x + 7.5, this.y + 22.5];
     this.center3 = [this.x + 22.5, this.y + 22.5];
+    this.moving = false;
 
     this.direction = direction;
     this.update = function() {
@@ -84,15 +87,32 @@ function triangle(width, height, color, x, y, direction, type) {
                 ctx.fill();
                 // ctx.fillRect(this.x, this.y, this.width, this.height);
         }
+        this.renewCircle();
     }
 
-    this.trapMove = function(){
+    this.renewCircle = function(){
+        this.center1 = [this.x + 15, this.y];
+        this.center2 = [this.x + 7.5, this.y + 22.5];
+        this.center3 = [this.x + 22.5, this.y + 22.5];
+    }
+
+    this.trapMove = function(object){
         switch(this.direction){
             case 1:
-                this.y += -consSpeed;
+                if(object.x +object.width > this.x && object.x < this.x+this.width){
+                    this.moving = true;
+                }
+                if(this.moving){
+                    this.y += -consSpeed;
+                }
                 break;
             case 2:
-                this.y += consSpeed;
+                if(object.x +object.width > this.x && object.x < this.x+this.width){
+                    this.moving = true;
+                }
+                if(this.moving){
+                    this.y += consSpeed;
+                }
                 break;
             case 3:
                 this.x += -consSpeed;
@@ -115,7 +135,7 @@ function getObstacles(level){
         for(k = 0; k < matrix[i].length; k++){
             if (matrix[i][k] == 'v'){
                 // console.log(i +" "+ k);
-                list.push(new triangle(30, 30, "gray", k*30, i*30));
+                list.push(new triangle(30, 30, "gray", k*30, i*30, 1));
             }
         }
     }
