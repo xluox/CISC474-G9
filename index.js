@@ -50,6 +50,8 @@ var myGameArea = {
         window.addEventListener('keydown', function (e) {
             // console.log(e.key);
             if(e.key == "ArrowUp" && keyTime > 0){ jump();}
+            if (e.key == "r") {myGameArea.restart(); }
+
             myGameArea.keys = (myGameArea.keys || []);
             myGameArea.keys[e.keyCode] = (e.type == "keydown");
         })
@@ -61,11 +63,13 @@ var myGameArea = {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
     stop : function() {
-    // clearInterval(this.interval);
-        this.restart();
+        clearInterval(this.interval);
+        
     },
     restart : function(){
         // console.log("Hspeed: " + Hspeed);
+        clearInterval(this.interval);
+        this.interval = setInterval(updateGameArea, 10);
         obstacles = getObstacles();
         myGamePiece = getPlayer();
         lifeUsed++;
@@ -251,6 +255,7 @@ function updateGameArea() {
     myGamePiece.speedY = 0;    
     if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece.speedX = -moveSpeed; }
     if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = moveSpeed; }
+
     myScore.text = "Life used: " + lifeUsed;
     myScore.update();
     myGamePiece.newPos();
