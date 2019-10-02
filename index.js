@@ -1,8 +1,6 @@
 var myGamePiece;
 var obstacles = [];
 var buildings = [];
-var myObstacle;
-var myObstacle2;
 var myScore;
 var lifeUsed = 0;
 var jumpConst = 2;
@@ -101,9 +99,11 @@ function component(width, height, color, x, y, type) {
     this.speedY = 0;   
     this.gravity = 0.05;
     this.gravitySpeed = 0; 
-    this.speedLimit = 10;
+    this.speedLimit = 9;
     this.x = x;
     this.y = y;
+    this.radius = 6;
+    this.center = [this.x + 7.5, this.y + 7.5];
     this.direction = 0;
     this.update = function() {
         ctx = myGameArea.context;
@@ -122,16 +122,25 @@ function component(width, height, color, x, y, type) {
         ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
+    this.renewCircle = function(){
+        this.center = [this.x + this.radius, this.y + this.radius];
+    }
     this.newPos = function() {
         this.gravitySpeed += this.gravity;
         if(this.gravitySpeed > this.speedLimit){
             this.gravitySpeed = this.speedLimit;
         }
         this.x += this.speedX;
-        this.y += this.gravitySpeed;  
+        this.y += this.gravitySpeed; 
+        this.renewCircle(); 
 
         for (i of buildings){
             this.hitBuilding(i);
+        }
+        for(i of obstacles){
+            if(this.crashWithTriangle(i)){
+                myGameArea.stop();
+            }
         }
         this.reachLevelPoint();
          
@@ -218,7 +227,39 @@ function component(width, height, color, x, y, type) {
     }
 
     this.crashWithTriangle = function(object){
+        var circleHero = {radius: this.radius, x: this.center[0], y: this.center[1]};
+        var circle1 = {radius: object.radius, x: object.center1[0], y: object.center1[1]};
+        var circle2 = {radius: object.radius, x: object.center2[0], y: object.center2[1]};
+        var circle3 = {radius: object.radius, x: object.center3[0], y: object.center3[1]};
 
+        var dx1 = circleHero.x - circle1.x;
+        var dy1 = circleHero.y - circle1.y;
+        var dx2 = circleHero.x - circle2.x;
+        var dy2 = circleHero.y - circle2.y;
+        var dx3 = circleHero.x - circle3.x;
+        var dy3 = circleHero.y - circle3.y;
+        var distance1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+        var distance2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+        var distance3 = Math.sqrt(dx3 * dx3 + dy3 * dy3);
+
+        console.log("distance1: "+ distance1 + "radius: " + circleHero.radius + circle1.radius );
+        console.log("distance2: "+ distance2 + "radius: " + circleHero.radius + circle2.radius );
+        console.log("distance3: "+ distance3 + "radius: " + circleHero.radius + circle3.radius );
+
+        if (distance1 < circleHero.radius + circle1.radius) {
+            // collision detected!
+            return true;
+        }
+        else if (distance2 < circleHero.radius + circle2.radius) {
+            // collision detected!
+            return true;
+        }
+        else if (distance3 < circleHero.radius + circle3.radius) {
+            // collision detected!
+            return true;
+        }
+
+        return false;
     }
 }
 
@@ -228,9 +269,9 @@ function updateGameArea() {
     for (i of obstacles){
         i.trapMove();
         i.update();
-        if(myGamePiece.crashWith(i) ){
-            myGameArea.stop();
-        }
+        // if(myGamePiece.crashWithTriangle(i) ){
+        //     myGameArea.stop();
+        // }
     }
     for (i of buildings){
         i.update();

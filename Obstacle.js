@@ -62,6 +62,11 @@ function triangle(width, height, color, x, y, direction, type) {
     this.gravitySpeed = 0; 
     this.x = x;
     this.y = y;
+    this.radius = 6.5;
+    this.center1 = [this.x + 15, this.y];
+    this.center2 = [this.x + 7.5, this.y + 22.5];
+    this.center3 = [this.x + 22.5, this.y + 22.5];
+
     this.direction = direction;
     this.update = function() {
         ctx = myGameArea.context;
