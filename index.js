@@ -16,34 +16,36 @@ var moveSpeed = 1;
 var jumpSpeed = 3;
 var intervalRate = 5;
 var baseLevel = 0;
-var level = 0;
+var level = baseLevel;
 var myLevel;
 var gameOver;
-var playerGravity = 0.09;
+var playerGravity = 0.08;
+var mainPieceSize = 17;
+var gatePoint = [300, Cbottom-21, Ctop+60, Cbottom-21,Cbottom-21]
 
 
 function startGame() {
     myGameArea.start();
     obstacles = getObstacles(baseLevel);
     buildings = getBuildings(baseLevel);
-    myGamePiece = getPlayer();
+    myGamePiece = getPlayer(level);
     myScore = new component("30px", "Consolas", "black", 760, 30, "text");
     myLevel = new component("30px", "Consolas", "black", 40, 30, "text");
     gameOver= new component("90px", "Georgia", "white", 230, 250, "gameOver");
 
 }
-function getPlayer(){
-    player =  new component(15, 15, "red", 40, 330);
+function getPlayer(level){
+    player =  new component(mainPieceSize, mainPieceSize, "slime_monster_spritesheet.png", 40, gatePoint[level], "hero");
     player.gravity = playerGravity;
     return player;
 }
-function getPlayerFromLeft(){
-    player =  new component(15, 15, "red", CleftEdge-20, Cbottom-16);
+function getPlayerFromLeft(level){
+    player =  new component(mainPieceSize, mainPieceSize, "slime_monster_spritesheet.png", CleftEdge-20, gatePoint[level], "hero");
     player.gravity = playerGravity;
     return player;
 }
-function getPlayerFromRight(){
-    player =  new component(15, 15, "red", CrightEdge+20, Cbottom-16);
+function getPlayerFromRight(level){
+    player =  new component(mainPieceSize, mainPieceSize, "slime_monster_spritesheet.png", CrightEdge+20, gatePoint[level+1], "hero");
     player.gravity = playerGravity;
     return player;
 }
@@ -81,10 +83,10 @@ var myGameArea = {
         // console.log("Hspeed: " + Hspeed);
         clearInterval(this.interval);
         this.interval = setInterval(updateGameArea, intervalRate);
-        level = baseLevel;
-        buildings = getBuildings(level);
+        // level = baseLevel;
         obstacles = getObstacles(level);
-        myGamePiece = getPlayer();
+        buildings = getBuildings(level);
+        myGamePiece = getPlayer(level);
         lifeUsed++;
     }
 }
@@ -92,7 +94,7 @@ var myGameArea = {
 
 function component(width, height, color, x, y, type) {
     this.type = type;
-    if (type == "image") {
+    if (type == "image" || type == "hero") {
         this.image = new Image();
         this.image.src = color;
     }
@@ -116,7 +118,13 @@ function component(width, height, color, x, y, type) {
             this.x, 
             this.y,
             this.width, this.height);
-        }    
+        }   
+        else if (type == "hero") {
+            ctx.drawImage(this.image, 
+            this.x, 
+            this.y,
+            this.width+3, this.height+3);
+        } 
         else if (this.type == "text") {
             ctx.font = this.width + " " + this.height;
             ctx.fillStyle = color;
@@ -146,13 +154,14 @@ function component(width, height, color, x, y, type) {
         this.y += this.gravitySpeed; 
         this.renewCircle(); 
 
-        for (i of buildings){
-            this.hitBuilding(i);
-        }
+
         for(i of obstacles){
             if(this.crashWithTriangle(i)){
                 myGameArea.stop();
             }
+        }
+        for (i of buildings){
+            this.hitBuilding(i);
         }
         this.reachLevelPoint();
          
@@ -223,7 +232,7 @@ function component(width, height, color, x, y, type) {
             console.log("level changed: " + level);
             obstacles = getObstacles(level);
             buildings = getBuildings(level);
-            myGamePiece = getPlayerFromLeft();
+            myGamePiece = getPlayerFromLeft(level);
 
         }
         else if(this.x+this.width < CleftEdge-30){
@@ -231,7 +240,7 @@ function component(width, height, color, x, y, type) {
             console.log("level changed: " + level);
             obstacles = getObstacles(level);
             buildings = getBuildings(level);
-            myGamePiece = getPlayerFromRight();
+            myGamePiece = getPlayerFromRight(level);
 
         }
 
@@ -278,6 +287,7 @@ function component(width, height, color, x, y, type) {
 function updateGameArea() {
 
     myGameArea.clear();
+
     for (i of obstacles){
         i.trapMove(myGamePiece);
         i.update();
@@ -304,11 +314,11 @@ function updateGameArea() {
 
 }
 function jump(){
-    console.log("Jump!!!");
+    // console.log("Jump!!!");
 
     accelerate(-jumpSpeed); 
     keyTime -= 1;
-    console.log("Jump left: " + keyTime);
+    // console.log("Jump left: " + keyTime);
 }
 function accelerate(n) {
   myGamePiece.gravitySpeed = n;
