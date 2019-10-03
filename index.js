@@ -7,20 +7,19 @@ var jumpConst = 2;
 var keyTime = jumpConst;
 var onGround = false;
 var onBlock = false;
-// var top = 0;
-// var bottom = 510;
-// var leftEdge = 30;
-// var rightEdge = 930;
 var Ctop = 0;
 var Cbottom = 510;
 var CleftEdge = 30;
 var CrightEdge = 930;
 var Hspeed = 0;
-var moveSpeed = 2;
-var jumpSpeed = 5;
-var intervalRate = 10;
+var moveSpeed = 1;
+var jumpSpeed = 3;
+var intervalRate = 5;
 var baseLevel = 0;
 var level = 0;
+var myLevel;
+var gameOver;
+var playerGravity = 0.09;
 
 
 function startGame() {
@@ -28,22 +27,24 @@ function startGame() {
     obstacles = getObstacles(baseLevel);
     buildings = getBuildings(baseLevel);
     myGamePiece = getPlayer();
-    myScore = new component("30px", "Consolas", "black", 780, 40, "text");
+    myScore = new component("30px", "Consolas", "black", 760, 30, "text");
+    myLevel = new component("30px", "Consolas", "black", 40, 30, "text");
+    gameOver= new component("90px", "Georgia", "white", 230, 250, "gameOver");
 
 }
 function getPlayer(){
     player =  new component(15, 15, "red", 40, 330);
-    player.gravity = 0.3;
+    player.gravity = playerGravity;
     return player;
 }
 function getPlayerFromLeft(){
-    player =  new component(15, 15, "red", CleftEdge-20, Cbottom-11);
-    player.gravity = 0.3;
+    player =  new component(15, 15, "red", CleftEdge-20, Cbottom-16);
+    player.gravity = playerGravity;
     return player;
 }
 function getPlayerFromRight(){
-    player =  new component(15, 15, "red", CrightEdge+20, Cbottom-11);
-    player.gravity = 0.3;
+    player =  new component(15, 15, "red", CrightEdge+20, Cbottom-16);
+    player.gravity = playerGravity;
     return player;
 }
 
@@ -72,13 +73,16 @@ var myGameArea = {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
     stop : function() {
+        gameOver.text = "GameOver!!!";
+        gameOver.update();
         clearInterval(this.interval);
-
     },
     restart : function(){
         // console.log("Hspeed: " + Hspeed);
         clearInterval(this.interval);
         this.interval = setInterval(updateGameArea, intervalRate);
+        level = baseLevel;
+        buildings = getBuildings(level);
         obstacles = getObstacles(level);
         myGamePiece = getPlayer();
         lifeUsed++;
@@ -99,7 +103,7 @@ function component(width, height, color, x, y, type) {
     this.speedY = 0;   
     this.gravity = 0.05;
     this.gravitySpeed = 0; 
-    this.speedLimit = 9;
+    this.speedLimit = 4.5;
     this.x = x;
     this.y = y;
     this.radius = 6;
@@ -117,6 +121,14 @@ function component(width, height, color, x, y, type) {
             ctx.font = this.width + " " + this.height;
             ctx.fillStyle = color;
             ctx.fillText(this.text, this.x, this.y);
+        }
+        else if (this.type == "gameOver"){
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 3;
+            ctx.fillText(this.text, this.x, this.y);
+            ctx.strokeText(this.text, this.x, this.y);
         } else {
         ctx.fillStyle = color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -148,8 +160,8 @@ function component(width, height, color, x, y, type) {
     this.hitBuilding = function(object){
 
         // stand on top
-        if (this.y >= (object.y - this.height -4) && 
-        this.y + this.height <= (object.y  +5) &&
+        if (this.y >= (object.y - this.height -(jumpSpeed-0.5)) && 
+        this.y + this.height <= (object.y  +jumpSpeed) &&
         (this.x < (object.x + object.width)) &&
         (this.x > (object.x - this.width))      ) {
             this.gravitySpeed = 0;
@@ -160,7 +172,7 @@ function component(width, height, color, x, y, type) {
         // hit from left
         else if ((this.y < (object.y + object.height)) && 
         (this.y > (object.y - this.height)) &&
-        (this.x < (object.x - this.width)+3 ) &&
+        (this.x < (object.x - this.width)+ (moveSpeed+0.5) ) &&
         (this.x > (object.x - this.width))) {
             this.x = object.x - this.width;
         }
@@ -169,12 +181,12 @@ function component(width, height, color, x, y, type) {
         else if ((this.y < (object.y + object.height)) && 
         (this.y > (object.y - this.height)) &&
         (this.x < (object.x + object.width) ) &&
-        (this.x > (object.x + object.width)-3 )) {
+        (this.x > (object.x + object.width)-(moveSpeed+0.5) )) {
             this.x = object.x + object.width;
         }
         // hit from bottom
         else if ((this.y <= (object.y + object.height)) && 
-        (this.y > (object.y + object.height) - 5) &&
+        (this.y > (object.y + object.height) - jumpSpeed) &&
         (this.x < (object.x + object.width)) &&
         (this.x > (object.x - this.width))) {
             this.gravitySpeed = 0;
@@ -285,6 +297,8 @@ function updateGameArea() {
 
     myScore.text = "Life used: " + lifeUsed;
     myScore.update();
+    myLevel.text = "Level: " + (level+1);
+    myLevel.update();
     myGamePiece.newPos();
     myGamePiece.update();
 
@@ -300,4 +314,9 @@ function accelerate(n) {
   myGamePiece.gravitySpeed = n;
 }
 
+
+function setup() {
+    createCanvas(windowWidth, windowHeight);
+    background(255, 0, 200);
+}
 
