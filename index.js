@@ -12,16 +12,31 @@ var Cbottom = 510;
 var CleftEdge = 30;
 var CrightEdge = 930;
 var Hspeed = 0;
-var moveSpeed = 1;
+var moveSpeed = 0.9;
 var jumpSpeed = 3;
 var intervalRate = 5;
-var baseLevel = 0;
+var baseLevel = 5;
 var level = baseLevel;
+var startLevel = 0;
 var myLevel;
 var gameOver;
-var playerGravity = 0.08;
-var mainPieceSize = 17;
-var gatePoint = [300, Cbottom-21, Ctop+60, Cbottom-21,Cbottom-21]
+var gameTitle;
+var gameMenu;
+var gameTutorial;
+var gameCredits;
+var creditsText;
+var creditsText2;
+var tutorialText1;
+var tutorialText2;
+var tutorialText3;
+var tutorialText4;
+var jumping = false;
+var playerGravity = 0.07;
+var mainPieceSize = 15;
+var gatePoint = [Cbottom-21, Cbottom-21,Cbottom-21, 300, Cbottom-21, Ctop+60, Cbottom-21,Cbottom-21]
+
+
+
 
 
 function startGame() {
@@ -29,9 +44,18 @@ function startGame() {
     obstacles = getObstacles(baseLevel);
     buildings = getBuildings(baseLevel);
     myGamePiece = getPlayer(level);
-    myScore = new component("30px", "Consolas", "black", 760, 30, "text");
+    myScore = new component("30px", "Consolas", "black", 750, 30, "text");
     myLevel = new component("30px", "Consolas", "black", 40, 30, "text");
     gameOver= new component("90px", "Georgia", "white", 230, 250, "gameOver");
+    gameTitle = new component("70px", "Georgia", "black", 60, 120, "text");
+    gameMenu = new component("30px", "Consolas", "black", 435, 360, "text");
+    gameTutorial = new component("30px", "Consolas", "black", 760, 450, "text");
+    gameCredits = new component("30px", "Consolas", "black", 50, 450, "text");
+    creditsText = new component("70px", "Georgia", "black", 180, 120, "text");
+    tutorialText1 = new component("30px", "Consolas", "black", 50, 430, "text");
+    tutorialText2 = new component("30px", "Consolas", "black", 320, 400, "text");
+    tutorialText3 = new component("30px", "Consolas", "black", 600, 250, "text");
+    tutorialText4 = new component("70px", "Georgia", "black", 180, 120, "text");
 
 }
 function getPlayer(level){
@@ -105,11 +129,11 @@ function component(width, height, color, x, y, type) {
     this.speedY = 0;   
     this.gravity = 0.05;
     this.gravitySpeed = 0; 
-    this.speedLimit = 4.5;
+    this.speedLimit = 3;
     this.x = x;
     this.y = y;
     this.radius = 6;
-    this.center = [this.x + 7.5, this.y + 7.5];
+    this.center = [this.x + mainPieceSize/2, this.y + mainPieceSize/2];
     this.direction = 0;
     this.update = function() {
         ctx = myGameArea.context;
@@ -121,8 +145,8 @@ function component(width, height, color, x, y, type) {
         }   
         else if (type == "hero") {
             ctx.drawImage(this.image, 
-            this.x, 
-            this.y,
+            this.x-1.5, 
+            this.y-1.5,
             this.width+3, this.height+3);
         } 
         else if (this.type == "text") {
@@ -150,15 +174,34 @@ function component(width, height, color, x, y, type) {
         if(this.gravitySpeed > this.speedLimit){
             this.gravitySpeed = this.speedLimit;
         }
+        if(this.gravitySpeed < 0){
+            jumping = true;
+        }
+        else{
+            jumping = false;
+        }
         this.x += this.speedX;
         this.y += this.gravitySpeed; 
         this.renewCircle(); 
 
 
         for(i of obstacles){
-            if(this.crashWithTriangle(i)){
-                myGameArea.stop();
+            if(i.type == "triangle"){
+                if(this.crashWithTriangle(i)){
+                    myGameArea.stop();
+                }
             }
+            else if(i.type == "door"){
+                if(this.crashWith(i)){
+                    lifeUsed = 0;
+                    level = 3;
+                    console.log("level changed: " + level);
+                    obstacles = getObstacles(level);
+                    buildings = getBuildings(level);
+                    myGamePiece = getPlayer(level);
+                }
+            }
+
         }
         for (i of buildings){
             this.hitBuilding(i);
@@ -169,8 +212,11 @@ function component(width, height, color, x, y, type) {
     this.hitBuilding = function(object){
 
         // stand on top
-        if (this.y >= (object.y - this.height -(jumpSpeed-0.5)) && 
-        this.y + this.height <= (object.y  +jumpSpeed) &&
+        if(jumping){
+
+        }
+        else if (this.y >= (object.y - this.height -(jumpSpeed-0.5)) && 
+        this.y + this.height <= (object.y  +0.5) &&
         (this.x < (object.x + object.width)) &&
         (this.x > (object.x - this.width))      ) {
             this.gravitySpeed = 0;
@@ -179,7 +225,7 @@ function component(width, height, color, x, y, type) {
         }
 
         // hit from left
-        else if ((this.y < (object.y + object.height)) && 
+        if ((this.y < (object.y + object.height)) && 
         (this.y > (object.y - this.height)) &&
         (this.x < (object.x - this.width)+ (moveSpeed+0.5) ) &&
         (this.x > (object.x - this.width))) {
@@ -198,7 +244,7 @@ function component(width, height, color, x, y, type) {
         (this.y > (object.y + object.height) - jumpSpeed) &&
         (this.x < (object.x + object.width)) &&
         (this.x > (object.x - this.width))) {
-            this.gravitySpeed = 0;
+            this.gravitySpeed = 0 ;
             this.y = object.y + object.height;
         }
         
@@ -288,12 +334,11 @@ function updateGameArea() {
 
     myGameArea.clear();
 
+
     for (i of obstacles){
         i.trapMove(myGamePiece);
         i.update();
-        // if(myGamePiece.crashWithTriangle(i) ){
-        //     myGameArea.stop();
-        // }
+
     }
     for (i of buildings){
         i.update();
@@ -305,10 +350,39 @@ function updateGameArea() {
     if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece.speedX = -moveSpeed; }
     if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = moveSpeed; }
 
-    myScore.text = "Life used: " + lifeUsed;
-    myScore.update();
-    myLevel.text = "Level: " + (level+1);
-    myLevel.update();
+
+    if(level == 1){
+        gameTitle.text = "I WANNA BE SUFFERING";
+        gameMenu.text = "Start";
+        gameTutorial.text = "Tutorial-->>";
+        gameCredits.text = "<<--Credits";
+        gameTitle.update();
+        gameMenu.update();
+        gameTutorial.update();
+        gameCredits.update();
+    }
+    else if(level == 0){
+        creditsText.text = "Produce     Yifu Li";
+        creditsText.update();
+    }
+    else if(level == 2){
+        tutorialText1.text = "Press < > to move";
+        tutorialText2.text = "Press ^ to jump!";
+        tutorialText3.text = "^ twice to jump higher!!";
+        tutorialText4.text = "Press R to restart!!!";
+        tutorialText1.update();
+        tutorialText2.update();
+        tutorialText3.update();
+        tutorialText4.update();
+    }
+    else{
+        myScore.text = "Life used: " + lifeUsed;
+        myScore.update();
+        myLevel.text = "Level: " + (level-2);
+        myLevel.update();
+    }
+
+    
     myGamePiece.newPos();
     myGamePiece.update();
 
@@ -325,8 +399,5 @@ function accelerate(n) {
 }
 
 
-function setup() {
-    createCanvas(windowWidth, windowHeight);
-    background(255, 0, 200);
-}
+
 
