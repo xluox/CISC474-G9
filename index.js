@@ -15,7 +15,7 @@ var Hspeed = 0;
 var moveSpeed = 0.9;
 var jumpSpeed = 3;
 var intervalRate = 5;
-var baseLevel = 5;
+var baseLevel = 1;
 var level = baseLevel;
 var startLevel = 0;
 var myLevel;
